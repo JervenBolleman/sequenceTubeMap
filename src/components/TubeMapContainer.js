@@ -65,6 +65,59 @@ class TubeMapContainer extends Component {
     );
   }
 
+  getNodesFromSparql = async () => {
+    const depth="/(f2f:)?";
+    var i;
+    var depthSp="";
+    for (i = 0; i < this.props.fetchParams.distance; i++) { 
+       depthSp=depthSp+depth;
+    }
+    const queryForNodes=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> 
+PREFIX vg:<http://biohackathon.org/resource/vg%23>
+PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward>
+SELECT 
+	DISTINCT
+        ?node
+        ?sequence
+ WHERE {
+    VALUES (?originalNode) { (<http://example.org/vg/node/${this.props.fetchParams.nodeId}>) } 
+    
+    ?originalNode f2f:${depthSp} ?node .
+    ?node rdf:value ?sequence .
+}`;
+    const queryForPaths=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> 
+PREFIX vg:<http://biohackathon.org/resource/vg%23>
+PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward>
+SELECT 
+	DISTINCT
+        ?path
+        ?node
+ WHERE {
+    VALUES (?originalNode) { (<http://example.org/vg/node/${this.props.fetchParams.nodeId}>) } 
+    
+    ?originalNode f2f:${depthSp} ?node .
+    ?step vg:node ?node ; vg:path ?path .
+}`;
+    try {
+      const responseForNodes = await fetch (`http://localhost:8088/sparql/?format=srj&query=${queryQueryForNodes}`);
+      const responseForPaths = await fetch (`http://localhost:8088/sparql/?format=srj&query=${queryQueryForPaths}`);
+      const jsonNodes = await responseForNodes.json();
+      const nodes = jsonNodes.results.bindings.map(o => {const v=o.node.value; return { "id" : v.substr(v.lastIndexOf('/')+1), "sequence" : o.node.sequence.value};});
+      console.log(nodes);
+      const jsonPaths = await responseForPaths.json();
+      console.log(jsonPaths);
+      const tracks = {};
+      const reads = {};
+      this.setState({
+          isLoading: false,
+          nodes,
+          tracks,
+          reads
+        });
+    } catch {
+        console.log('die');
+    }
+  }
   getRemoteTubeMapData = async () => {
     this.setState({ isLoading: true, error: null });
     try {
@@ -81,7 +134,7 @@ class TubeMapContainer extends Component {
         const error = json.error || 'Fetching remote data returned error';
         this.setState({ error: error, isLoading: false });
       } else {
-        const nodes = tubeMap.vgExtractNodes(json.graph);
+        const nodes = tubeMap.vgExtractNodes(json.graph)
         const tracks = tubeMap.vgExtractTracks(json.graph);
         const reads = tubeMap.vgExtractReads(nodes, tracks, json.gam);
         this.setState({
@@ -115,7 +168,9 @@ class TubeMapContainer extends Component {
         tracks = data.inputTracks4;
         break;
       case dataOriginTypes.EXAMPLE_5:
-        tracks = data.inputTracks5;
+        this.props.fetchParams.nodeId=1
+        this.props.fetchParams.distance=5
+        this.getNodesFromSparql();
         break;
       case dataOriginTypes.EXAMPLE_6:
         const vg = JSON.parse(data.k3138);
@@ -127,6 +182,7 @@ class TubeMapContainer extends Component {
           this.readsFromStringToArray(data.demoReads)
         );
         break;
+      
       default:
         console.log('invalid data origin type');
     }
