@@ -34,8 +34,7 @@ class HeaderForm extends Component {
     pathSelectOptions: ['none'],
     pathSelect: 'none',
 
-    sparqlBackend: 'http://localhost:8080',
-    sparqlSelect: 'http://localhost:8080',
+    sparqlSelect: 'http://localhost:8088',
 
     xgFile: 'snp1kg-BRCA1.vg.xg',
     gbwtFile: '',
@@ -190,7 +189,8 @@ class HeaderForm extends Component {
       gbwtFile: this.state.gbwtFile,
       gamFile: this.state.gamFile,
       anchorTrackName: this.state.anchorTrackName,
-      dataPath: this.state.dataPath
+      dataPath: this.state.dataPath,
+      sparqlSelect: this.state.sparqlSelect
     };
     this.props.setFetchParams(fetchParams);
   };
@@ -336,6 +336,7 @@ class HeaderForm extends Component {
                 )}
                 {sparqlFlag && (
                   <SparqlDataFormRow
+                    sparqlSelect={this.state.sparqlSelect}
                     pathSelect={this.state.pathSelect}
                     pathSelectOptions={this.state.pathSelectOptions}
                     handleInputChange={this.handleInputChange}

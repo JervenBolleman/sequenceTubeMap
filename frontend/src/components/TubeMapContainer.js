@@ -19,9 +19,13 @@ class TubeMapContainer extends Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.dataOrigin !== prevProps.dataOrigin) {
-      this.props.dataOrigin === dataOriginTypes.API
-        ? this.getRemoteTubeMapData()
-        : this.getExampleData();
+      if (this.props.dataOrigin === dataOriginTypes.API) {
+        this.getRemoteTubeMapData();
+      } else if (this.props.dataOrigin === dataOriginTypes.SPARQL) {
+        this.getSparqlData();
+      } else {
+        this.getExampleData();
+      }
     } else if (this.props.fetchParams !== prevProps.fetchParams) {
       this.getRemoteTubeMapData();
     }
