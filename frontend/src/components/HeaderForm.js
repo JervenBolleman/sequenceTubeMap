@@ -92,6 +92,29 @@ class HeaderForm extends Component {
       console.log('POST to /getFilenames failed');
     }
   };
+  
+  updatePathNamesFromSparql = async () => {
+    try {
+        const fetchedData = await fetch (`${this.state.sparqlSelect}?format=srj&query=PREFIX vg:<http://biohackathon.org/resource/vg%23> SELECT DISTINCT ?pathname WHERE { ?step vg:path ?pathname } ORDER BY ?pathname`);
+        const fetchedJson = await fetchedData.json();
+        const lpso = fetchedJson.results.bindings.map(p => p.pathname.value);
+        console.log(lpso);
+
+        this.setState(state => {
+            const pathSelect = lpso.includes(state.pathSelect)
+                ? state.pathSelect
+                : lpso[0];
+            return {
+                pathSelectOptions: lpso,
+                pathSelect,
+                anchorTrackName: pathSelect
+            };
+        });
+    } catch (error) {
+      console.log(error);
+      console.log('GETTING sparql path names failed');
+    }
+  }
 
   getPathNames = async (xgFile, isUploadedFile) => {
     try {
@@ -165,7 +188,8 @@ class HeaderForm extends Component {
       });
     } else if (value === 'syntheticExamples') {
       this.setState({ dataType: dataTypes.EXAMPLES });
-    } else if (value === 'sparqlBackend') {
+    } else if (value === 'sparqlBackend') {  
+      this.updatePathNamesFromSparql();
       this.props.setDataOrigin( dataOriginTypes.SPARQL);
       this.setState(state => {
         return {
@@ -342,6 +366,7 @@ class HeaderForm extends Component {
                   <SparqlDataFormRow
                     sparqlSelect={this.state.sparqlSelect}
                     pathSelect={this.state.pathSelect}
+                    getPathNames={this.updatePathNamesFromSparql}
                     pathSelectOptions={this.state.pathSelectOptions}
                     handleInputChange={this.handleInputChange}
                   />
