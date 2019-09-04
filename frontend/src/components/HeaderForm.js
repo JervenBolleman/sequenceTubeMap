@@ -173,6 +173,8 @@ class HeaderForm extends Component {
           dataType: dataTypes.SPARQL,
           anchorTrackName: state.pathSelect,
           dataPath: 'sparql',
+          distance: '10',
+          byNode: 'true',
         };
       });
     }

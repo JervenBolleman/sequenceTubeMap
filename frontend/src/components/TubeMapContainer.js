@@ -66,6 +66,7 @@ class TubeMapContainer extends Component {
       </div>
     );
   }
+
   getNodesFromSparql = async () => {
     const depth="/(f2f:)?";
     var i;
@@ -73,8 +74,8 @@ class TubeMapContainer extends Component {
     for (i = 0; i < this.props.fetchParams.distance; i++) {
        depthSp=depthSp+depth;
     }
-    const queryForNodes=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> PREFIX vg:<http://biohackathon.org/resource/vg%23> PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward> SELECT DISTINCT ?node ?sequence WHERE { BIND (<http://example.org/vg/node/${this.props.fetchParams.nodeId}> AS ?originalNode) . ?originalNode f2f:${depthSp} ?node . ?node rdf:value ?sequence . }`;
-    const queryForPaths=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> PREFIX vg:<http://biohackathon.org/resource/vg%23> PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward> SELECT DISTINCT ?rank ?path ?node ?position WHERE { BIND (<http://example.org/vg/node/${this.props.fetchParams.nodeId}> AS ?originalNode) . ?originalNode f2f:${depthSp} ?node . ?step vg:node ?node ; vg:path ?path ; vg:rank ?rank ; vg:position ?position . } ORDER BY ?rank`;
+    const queryForNodes=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> PREFIX vg:<http://biohackathon.org/resource/vg%23> PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward> SELECT DISTINCT ?node ?sequence WHERE { BIND (<http://example.org/vg/node/${this.props.fetchParams.nodeID}> AS ?originalNode) . ?originalNode f2f:${depthSp} ?node . ?node rdf:value ?sequence . }`;
+    const queryForPaths=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> PREFIX vg:<http://biohackathon.org/resource/vg%23> PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward> SELECT DISTINCT ?rank ?path ?node ?position WHERE { BIND (<http://example.org/vg/node/${this.props.fetchParams.nodeID}> AS ?originalNode) . ?originalNode f2f:${depthSp} ?node . ?step vg:node ?node ; vg:path ?path ; vg:rank ?rank ; vg:position ?position . } ORDER BY ?rank`;
     try {
       const responseForNodes = await fetch (`${this.props.fetchParams.sparqlSelect}?format=srj&query=${queryForNodes}`);
       const responseForPaths = await fetch (`${this.props.fetchParams.sparqlSelect}?format=srj&query=${queryForPaths}`);
@@ -106,7 +107,7 @@ class TubeMapContainer extends Component {
   }
 
   getRemoteSparqlData = async () => {
-    this.setState({ isLoading: true});
+    this.setState({ isLoading: true, error: null });
     try {
         const fetchedData = await this.getNodesFromSparql();
         this.setState({ isLoading: false, nodes: fetchedData.nodes, tracks: fetchedData.tracks});
@@ -155,7 +156,7 @@ class TubeMapContainer extends Component {
         tracks = data.inputTracks1;
         break;
       case dataOriginTypes.EXAMPLE_7:
-        this.props.fetchParams.nodeId=263217893;
+        this.props.fetchParams.nodeID=263217893;
         this.props.fetchParams.distance=10;
         const data2= await this.getNodesFromSparql();
         nodes = data2.nodes;
