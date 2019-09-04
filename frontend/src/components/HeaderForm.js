@@ -34,7 +34,7 @@ class HeaderForm extends Component {
     pathSelectOptions: ['none'],
     pathSelect: 'none',
 
-    sparqlSelect: 'http://localhost:8088',
+    sparqlSelect: 'http://localhost:8088/sparql/',
 
     xgFile: 'snp1kg-BRCA1.vg.xg',
     gbwtFile: '',
@@ -166,8 +166,10 @@ class HeaderForm extends Component {
     } else if (value === 'syntheticExamples') {
       this.setState({ dataType: dataTypes.EXAMPLES });
     } else if (value === 'sparqlBackend') {
+      this.props.setDataOrigin( dataOriginTypes.SPARQL);
       this.setState(state => {
         return {
+          dataOrigin: dataTypes.sparql,
           dataType: dataTypes.SPARQL,
           anchorTrackName: state.pathSelect,
           dataPath: 'sparql',

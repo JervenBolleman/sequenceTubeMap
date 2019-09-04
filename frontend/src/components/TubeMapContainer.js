@@ -18,16 +18,14 @@ class TubeMapContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.dataOrigin !== prevProps.dataOrigin) {
+    if (this.props.dataOrigin !== prevProps.dataOrigin || this.props.fetchParams !== prevProps.fetchParams) {
       if (this.props.dataOrigin === dataOriginTypes.API) {
         this.getRemoteTubeMapData();
       } else if (this.props.dataOrigin === dataOriginTypes.SPARQL) {
-        this.getSparqlData();
+        this.getRemoteSparqlData();
       } else {
         this.getExampleData();
       }
-    } else if (this.props.fetchParams !== prevProps.fetchParams) {
-      this.getRemoteTubeMapData();
     }
   }
 
@@ -78,8 +76,8 @@ class TubeMapContainer extends Component {
     const queryForNodes=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> PREFIX vg:<http://biohackathon.org/resource/vg%23> PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward> SELECT DISTINCT ?node ?sequence WHERE { BIND (<http://example.org/vg/node/${this.props.fetchParams.nodeId}> AS ?originalNode) . ?originalNode f2f:${depthSp} ?node . ?node rdf:value ?sequence . }`;
     const queryForPaths=`PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> PREFIX vg:<http://biohackathon.org/resource/vg%23> PREFIX f2f:<http://biohackathon.org/resource/vg%23linksForwardToForward> SELECT DISTINCT ?rank ?path ?node ?position WHERE { BIND (<http://example.org/vg/node/${this.props.fetchParams.nodeId}> AS ?originalNode) . ?originalNode f2f:${depthSp} ?node . ?step vg:node ?node ; vg:path ?path ; vg:rank ?rank ; vg:position ?position . } ORDER BY ?rank`;
     try {
-      const responseForNodes = await fetch (`http://localhost:8088/sparql/?format=srj&query=${queryForNodes}`);
-      const responseForPaths = await fetch (`http://localhost:8088/sparql/?format=srj&query=${queryForPaths}`);
+      const responseForNodes = await fetch (`${this.props.fetchParams.sparqlSelect}?format=srj&query=${queryForNodes}`);
+      const responseForPaths = await fetch (`${this.props.fetchParams.sparqlSelect}?format=srj&query=${queryForPaths}`);
       const jsonNodes = await responseForNodes.json();
       const nodes = jsonNodes.results.bindings.map(o => {const v=o.node.value; return { "name" : v.substr(v.lastIndexOf('/')+1), "seq" : o.sequence.value, "sequenceLength" : o.sequence.value.length };});
       const jsonPaths = await responseForPaths.json();
@@ -103,9 +101,19 @@ class TubeMapContainer extends Component {
     } catch (error) {
         console.log(error);
         //this.setState({ error: error, isLoading: false });
+        throw error;
     }
   }
 
+  getRemoteSparqlData = async () => {
+    this.setState({ isLoading: true});
+    try {
+        const fetchedData = await this.getNodesFromSparql();
+        this.setState({ isLoading: false, nodes: fetchedData.nodes, tracks: fetchedData.tracks});
+    } catch (error) {
+      this.setState({ error: error, isLoading: false });
+    }
+  }
   getRemoteTubeMapData = async () => {
     this.setState({ isLoading: true, error: null });
     try {

@@ -56,8 +56,7 @@ class App extends Component {
 
   setFetchParams = fetchParams => {
     this.setState({
-      fetchParams: fetchParams,
-      dataOrigin: dataOriginTypes.API
+      fetchParams: fetchParams
     });
   };
 
