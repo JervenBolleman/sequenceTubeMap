@@ -114,7 +114,7 @@ class TubeMapContainer extends Component {
     const path = this.props.fetchParams.anchorTrackName;
     const distance = this.props.fetchParams.distance;
     const offset = this.props.fetchParams.nodeID;
-    const upto = new Number(offset) + new Number(distance);
+    const upto = Number(offset) + Number(distance);
     const queryForNodes = `PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns%23> PREFIX vg:<http://biohackathon.org/resource/vg%23> SELECT DISTINCT ?node ?sequence 
 WHERE {
   {
